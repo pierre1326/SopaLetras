@@ -1,8 +1,58 @@
 %Testo unicamente
-example(FileName) :-
-    read_words('words.txt'),
-    expand_solutions([ [ [ [0,0], [0,4] ], [ [0,0], [4,0] ], [ [0,0], [4,4] ] ], [ [ [0,0], [0,4] ], [ [0,0], [4,0] ], [ [0,0], [4,4] ] ] ], ExpandedSolutions),
-    write_solutions(FileName, ExpandedSolutions).
+example(_) :-
+    read_soup('alphabetSoup.txt'),
+    soup(Lines),
+    writeln(Lines),
+    get_diagonals(Lines).
+
+get_diagonals(Matrix) :-
+    length(Matrix, Length),
+    N is Length - 1,
+    findall(Diagonal, (
+        between(0, N, StartRow),
+        get_diagonal(Matrix, StartRow, Diagonal)
+    ), Diagonals),
+    writeln(Diagonals).
+
+get_diagonal(Matrix, StartRow, Diagonal) :-
+    length(Matrix, N),
+    findall(Element, (
+        between(StartRow, N, I),
+        J is I - StartRow,
+        nth0(I, Matrix, Row),
+        nth0(J, Row, Element)
+    ), Result),
+    atomic_list_concat(Result, '', Diagonal).
+
+find_matching_positions_horizontal(Matrix, Substring, MatchingPositions) :-
+    findall([ [ IndexRow, Start ], [ IndexRow, End ] ], (
+        nth1(IndexRow, Matrix, Row),
+        atom_chars(RowAtom, Row),
+        (
+            sub_atom(RowAtom, Before, Length, _, Substring)
+        ;
+            invert_word(Substring, Inverted),
+            sub_atom(RowAtom, Before, Length, _, Inverted)
+        ),
+        Start is Before + 1,
+        End is Start + Length - 1
+    ), MatchingPositions).
+
+find_matching_positions_vertical(Matrix, Substring, MatchingPositions) :-
+    transpose(Matrix, TransposedMatrix),
+    findall([ [ Start, IndexColumn ], [ End, IndexColumn ] ], (
+        nth1(IndexColumn, TransposedMatrix, Row),
+        atom_chars(RowAtom, Row),
+        (
+            sub_atom(RowAtom, Before, Length, _, Substring)
+        ;
+            invert_word(Substring, Inverted),
+            sub_atom(RowAtom, Before, Length, _, Inverted)
+        ),
+        Start is Before + 1,
+        End is Start + Length - 1
+    ), MatchingPositions).
+
 
 expand_solutions([], []).
 expand_solutions([Word | Words], ExpandedSolutions) :-
@@ -96,6 +146,21 @@ read_lines(Stream, Lines) :-
 
 read_line(Stream, Line) :-
     read_line_to_string(Stream, Line).
+
+invert_word(Word, Result) :-
+    atom_chars(Word, List),
+    reverse(List, InvertedList),
+    atom_chars(Result, InvertedList).
+
+transpose([], []).
+transpose([[]|_], []).
+transpose(Matrix, [FirstCol|RestCols]) :-
+    transpose_1st_col(Matrix, FirstCol, RestMatrix),
+    transpose(RestMatrix, RestCols).
+
+transpose_1st_col([], [], []).
+transpose_1st_col([[First|Row]|Rows], [First|FirstCol], [Row|RestMatrix]) :-
+    transpose_1st_col(Rows, FirstCol, RestMatrix).
 
 %Unicamente para testeo
 print_array([]).

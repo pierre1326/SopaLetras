@@ -2,32 +2,38 @@
 example(_) :-
     read_soup('alphabetSoup.txt'),
     soup(Lines),
-    writeln(Lines),
-    get_diagonals(Lines).
+    find_matching_positions_diagonal(Lines, 'apple', MatchingPositions),
+    writeln(MatchingPositions).
 
-get_diagonals(Matrix) :-
-    length(Matrix, Length),
-    N is Length - 1,
-    findall(Diagonal, (
-        between(0, N, StartRow),
-        get_diagonal(Matrix, StartRow, Diagonal)
-    ), Diagonals),
-    writeln(Diagonals).
+find_matching_positions_diagonal(Matrix, Substring, MatchingPositions) :-
+    transpose(Matrix, TransposedMatrix),
+    get_diagonals(TransposedMatrix, 1, TransposedDiagonals),
+    find_matching_positions_diagonal_superior(TransposedDiagonals, Substring, MatchingPositionsSuperior),
+    writeln(MatchingPositionsSuperior).
 
-get_diagonal(Matrix, StartRow, Diagonal) :-
-    length(Matrix, N),
-    findall(Element, (
-        between(StartRow, N, I),
-        J is I - StartRow,
-        nth0(I, Matrix, Row),
-        nth0(J, Row, Element)
-    ), Result),
-    atomic_list_concat(Result, '', Diagonal).
+find_matching_positions_diagonal_superior(Matrix, Substring, MatchingPositions) :-
+    writeln(Matrix),
+    findall([ [ Start, StartColumn ], [ End, EndColumn ] ], (
+        nth1(IndexRow, Matrix, Row),
+        atomic_list_concat(Row, '', RowAtom),
+        (
+            sub_atom(RowAtom, Before, Length, _, Substring)
+        ;
+            invert_word(Substring, Inverted),
+            sub_atom(RowAtom, Before, Length, _, Inverted)
+        ),
+        Start is Before + 1,
+        End is Start + Length - 1,
+        StartColumn is IndexRow + Start,
+        EndColumn is IndexRow + End
+    ), MatchingPositions).
+
+%find_matching_positions_diagonal_lower
 
 find_matching_positions_horizontal(Matrix, Substring, MatchingPositions) :-
     findall([ [ IndexRow, Start ], [ IndexRow, End ] ], (
         nth1(IndexRow, Matrix, Row),
-        atom_chars(RowAtom, Row),
+        atomic_list_concat(Row, '', RowAtom),
         (
             sub_atom(RowAtom, Before, Length, _, Substring)
         ;
@@ -42,7 +48,7 @@ find_matching_positions_vertical(Matrix, Substring, MatchingPositions) :-
     transpose(Matrix, TransposedMatrix),
     findall([ [ Start, IndexColumn ], [ End, IndexColumn ] ], (
         nth1(IndexColumn, TransposedMatrix, Row),
-        atom_chars(RowAtom, Row),
+        atomic_list_concat(Row, '', RowAtom),
         (
             sub_atom(RowAtom, Before, Length, _, Substring)
         ;
@@ -53,6 +59,22 @@ find_matching_positions_vertical(Matrix, Substring, MatchingPositions) :-
         End is Start + Length - 1
     ), MatchingPositions).
 
+get_diagonals(Matrix, Start, Diagonals) :-
+    length(Matrix, Length),
+    N is Length - 1,
+    findall(Diagonal, (
+        between(Start, N, StartRow),
+        get_diagonal(Matrix, StartRow, Diagonal)
+    ), Diagonals).
+
+get_diagonal(Matrix, StartRow, Diagonal) :-
+    length(Matrix, N),
+    findall(Element, (
+        between(StartRow, N, I),
+        J is I - StartRow,
+        nth0(I, Matrix, Row),
+        nth0(J, Row, Element)
+    ), Diagonal).
 
 expand_solutions([], []).
 expand_solutions([Word | Words], ExpandedSolutions) :-
@@ -161,9 +183,3 @@ transpose(Matrix, [FirstCol|RestCols]) :-
 transpose_1st_col([], [], []).
 transpose_1st_col([[First|Row]|Rows], [First|FirstCol], [Row|RestMatrix]) :-
     transpose_1st_col(Rows, FirstCol, RestMatrix).
-
-%Unicamente para testeo
-print_array([]).
-print_array([ X | Rest ]) :-
-    writeln(X),
-    print_array(Rest).

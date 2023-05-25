@@ -151,9 +151,22 @@ class ButtonWindow(tk.Tk):
         self.geometry(f"{500 + window_width}x{height}")
         self.buttons_generated = True 
         self.update_buttons(solutions)
+        self.show_solutions(solutions)
+
+    def show_solutions(self, solutions):
+        message = ""
+        for solution in solutions:
+            word = solution[Solution.WORD].decode('utf-8')
+            lines = solution[Solution.LINES]
+            message += f"Palabra: {word}\n\nSolución:\n"
+            for line in lines:
+                message += "\n"
+                for letter in line:
+                    message += f"{letter} "
+            message += "\n\n"
+        messagebox.showinfo("Soluciones", message)   
 
     def update_buttons(self, solutions):
-        print(solutions)
         for solution in solutions:
             lines = solution[Solution.LINES]
             for line in lines:

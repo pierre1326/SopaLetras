@@ -16,7 +16,7 @@ SOLUTIONS_PATH = 'solutions.txt'
 prolog = Prolog()
 
 #Load prolog project
-def consultProject(path = PROLOG_PATH):
+def consult_project(path = PROLOG_PATH):
     prolog.consult(path)
 
 #Resolve soup
@@ -31,7 +31,7 @@ def resolve_soup(path_soup = SOUP_PATH, path_words = WORDS_PATH, path_solutions 
     else :
         return None, None
 
-def createSolution(word, expanded_solution):
+def create_solution(word, expanded_solution):
     solutions = []
     result = {}
     result[Solution.WORD] = word
@@ -55,27 +55,27 @@ Result object format:
     ]
 }
 """
-def formatResponse(words, expanded_solutions):
+def format_response(words, expanded_solutions):
     if len(words) == len(expanded_solutions):
         solutions = []
         for index, word in enumerate(words):
             expanded_solution = expanded_solutions[index]
-            solutions.append(createSolution(word, expanded_solution))
+            solutions.append(create_solution(word, expanded_solution))
         return solutions
     else:
         return None
 
 def example(): #No paso parametros a funciones porque uso los default
-    consultProject()
+    consult_project()
     words, expanded_solutions = resolve_soup() #Debes pasar los paths que selecciono el usuario
-    solutions = formatResponse(words, expanded_solutions)
+    solutions = format_response(words, expanded_solutions)
     print(solutions)
 
-def loadInterface():
+def load_interface():
     print("En este metodo debes iniciar tu interfaz")
 
 def main():
     example()
-    loadInterface()
+    load_interface()
 
 main()

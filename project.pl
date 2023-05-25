@@ -1,24 +1,10 @@
-%Testo unicamente
-example(_) :-
-    read_soup('alphabetSoup.txt'),
-    read_words('words.txt'),
-    soup(Lines),
-    words(Words),
-    find_solution(Lines, Words, Solutions),
-    writeln(Solutions),
-    expand_solutions(Solutions, ExpandedSolutions),
-    writeln(ExpandedSolutions),
-    write_solutions('solutions.txt', ExpandedSolutions, Words).
-
-solve_soup(FileNameSoup, FileNameWords, FileNameSolutions) :-
+solve_soup(FileNameSoup, FileNameWords, FileNameSolutions, Words, ExpandedSolutions) :-
     read_soup(FileNameSoup),
     read_words(FileNameWords),
     soup(Lines),
     words(Words),
     find_solution(Lines, Words, Solutions),
-    writeln(Solutions),
     expand_solutions(Solutions, ExpandedSolutions),
-    writeln(ExpandedSolutions),
     write_solutions(FileNameSolutions, ExpandedSolutions, Words).
 
 find_solution(Lines, Words, Solutions) :-

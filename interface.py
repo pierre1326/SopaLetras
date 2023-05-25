@@ -64,7 +64,7 @@ class ButtonWindow(tk.Tk):
         self.word_search_file = False
         self.word_list_file = False
 
-        self.generate_button = tk.Button(self, text="Generate Matrix", command=self.generate_buttons)
+        self.generate_button = tk.Button(self, text="Resolve Soup", command=self.generate_buttons)
         self.generate_button.grid(row=0, column=0, pady=10, padx=10)
 
         self.load_word_search_button = tk.Button(self, text="Load Word Search", command=self.select_word_search)

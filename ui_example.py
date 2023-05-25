@@ -26,7 +26,6 @@ def consult_project(path = PROLOG_PATH):
 #Resolve soup
 def resolve_soup(path_soup = SOUP_PATH, path_words = WORDS_PATH, path_solutions = SOLUTIONS_PATH):
     query = "solve_soup('{}', '{}', '{}', Words, ExpandedSolutions)".format(path_soup, path_words, path_solutions)
-    print(query)
     result = list(prolog.query(query))
     if result:
         expanded_solutions = result[0]["ExpandedSolutions"]
@@ -39,7 +38,7 @@ def create_solution(word, expanded_solution):
     solutions = []
     result = {}
     result[Solution.WORD] = word
-    for line in enumerate(expanded_solution):
+    for line in expanded_solution:
         solutions.append(line)
     result[Solution.LINES] = solutions
     return result
@@ -58,7 +57,8 @@ class ButtonWindow(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.title("Word Search")
-        self.geometry("450x100") 
+        self.geometry("500x100") 
+        self.resizable(False, False)
 
         self.buttons_generated = False
         self.word_search_file = False
@@ -85,6 +85,7 @@ class ButtonWindow(tk.Tk):
             self.word_list_file = file
             filename = os.path.basename(self.word_list_file)
             self.word_list_state_label.configure(text=f"File: {filename}")
+            self.read_words()
 
     def select_word_search(self):
         file = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
@@ -92,6 +93,22 @@ class ButtonWindow(tk.Tk):
             self.word_search_file = file
             filename = os.path.basename(self.word_search_file)
             self.word_search_state_label.configure(text=f"File: {filename}")
+
+    def read_words(self):
+        words = []
+        with open(self.word_list_file, 'r') as file:
+            for line in file:
+                row = line.strip().split(',')
+                words += row
+        row = 0
+        column = 0
+        for word in words:
+            if column >= 3:
+                column = 0
+                row += 1
+            word_label = tk.Label(self, width=20, text=word)
+            word_label.grid(row=row + 2, column=column, pady=10, padx=10)
+            column += 1
 
     def read_file(self):
         matrix = []
@@ -101,7 +118,7 @@ class ButtonWindow(tk.Tk):
                 matrix.append(row)
         return matrix
 
-    def executeProlog(self):
+    def execute_prolog(self):
         consult_project()
         words, expanded_solutions = resolve_soup(self.word_search_file, self.word_list_file)
         solutions = format_response(words, expanded_solutions)
@@ -113,8 +130,7 @@ class ButtonWindow(tk.Tk):
         if not self.word_search_file or not self.word_list_file:
             return messagebox.showerror("Error", "Please complete the information before continuing")
 
-        solutions = self.executeProlog()
-        print(solutions)
+        solutions = self.execute_prolog()
         matrix = self.read_file()
 
         self.rows = len(matrix)
@@ -132,9 +148,17 @@ class ButtonWindow(tk.Tk):
 
         window_width = self.columns * 50 
         height = (self.rows + 4) * 30
-        self.geometry(f"{450 + window_width}x{height}")
+        self.geometry(f"{500 + window_width}x{height}")
         self.buttons_generated = True 
-        #self.change_button_color(0, 1, "blue")
+        self.update_buttons(solutions)
+
+    def update_buttons(self, solutions):
+        print(solutions)
+        for solution in solutions:
+            lines = solution[Solution.LINES]
+            for line in lines:
+                for point in line:
+                    self.change_button_color(point[0] - 1, point[1] - 1, "light blue")
 
     def change_button_color(self, row, column, new_color):
         if not self.buttons_generated:
